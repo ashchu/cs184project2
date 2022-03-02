@@ -161,7 +161,7 @@
     <p>One useful way to modify meshes is to alter the direction of an edge by flipping them. This can result in help more uniformity when creating subdivisions, upsampling, or adding in edge loops.</p>
     <p>To implement our half-edge flip feature, we focused on the process in which an edge flip was made by flipping the interior of the two triangles. Edge flip flips the edge passed in and returns an iterator to the flipped edge. First we check if the edge is a boundary using the isBoundary() method, and if it is, we return immediately. The rest of the function mainly involves fetching all the edges, vertices, and half edges. </p>
     <p> We used the below diagram of a reference of how the triangles look before the flip to get edges e1-e4, half-edges h1-h9, and vertices v0-3:</p>
-    
+
     <img src="img/beforeflip.PNG" align="middle" style="margin-left:auto; margin-right:auto; display:block; width: 400px;" alt="Head image" />
     <p> and this image as a reference for reassigning pointers after the edge flip. As an example, we reassign h0's vertex to be v3. Although some pointers don't change, for example, h1's next remains h2, as does a number of the next pointers, but we decide to "reassign" them as a sanity check anyway, because it's easier to keep track of all the pointers rather than just a few</p>
     <img src="img/beforeflip.PNG" align="middle" style="margin-left:auto; margin-right:auto; display:block; width: 400px;" alt="Head image" />
@@ -187,6 +187,8 @@
     </div>
 
     <h3 align="middle">Part 5: Half-edge split</h3>
+    <img src="img/part6.jpg" style="margin-left:auto; margin-right:auto; display:block; width: 300px;">
+    <figcaption style="text-align: center; margin-left: 88px;">Reference diagram for implementing part 5.</figcaption>
     <p>Similar to flipping edges, we can split edges. For this operation, we first calculate the midpoint of the edge we want to split. From there, we reassign or create 3-4 new edges accordingly to represent the edge being divided into smaller edges.</p>
 
     <p>As with the last method, we retrieve all the edge, vertex, and half edge pointers -- this includes half edges h0 - h9, vertices v0 - v3, edges e1-e4, and faces f0-f1 following the diagram from the previous part. But since we’re splitting an edge now we also have to create new edges – 3 of them (e5 - e7), as per our diagrams below. Since we have 3 new edges, we need 2 new halfedges for each, which means 6 total new halfedges that we created, ie h10 through h15. Before reassigning pointers, we also calculate the midpoint position on which we split, by setting v4 to a newVertex() and assigning its position to be the midpoint between v0 and v1. Then we switch around our pointers for halfedge neighbors, and vertex and edge halfedges, utilizing the setNeighbors method. For example, we use setNeighbors to set h1's next to h10, one of the halfedges on the new e6. Similarly, we set the new e6's half edge to h10. We repeat similar processes with the other new edges and halfedges. In addition, since we created 2 new triangles within the triangle mesh, we need to make new faces, f2 and f3. We create those with newFace() and assign the respective halfedges (eg f2.halfEdge() = h1). </p>
@@ -218,8 +220,6 @@
     </div>
 
     <h3 align="middle">Part 6: Loop subdivision for mesh upsampling</h3>
-    <img src="img/part6.jpg" style="margin-left:auto; margin-right:auto; display:block; width: 300px;">
-    <figcaption align="middle">Reference diagram for implementing part 6.</figcaption>
 
     <p>In this part we did loop division, in which you upsample to create a higher-resolution image. To implement the function, we started by looping over the vertices with mesh.verticesBegin(). We make sure these vertices are labelled as original by setting isNew to false, since we will need to later distinguish between original and new vertices and everything should be consistent. </p>
     <p>On each vertex we loop over its neighbors using the twin() and next() pointers and take the sum of their positions until we arrive back at the original vertex. We do this with a do-while loop. Then, we use this sum to compute new positions for each of the old vertices. The weight we give the original position in our computation for the new one depends on the degree. So, we check the degree attribute and use the formula for the new position as (1 - n * u) * original position + u * neighborSum where n is the degree, u is 3/16 if n=3 or 3/(8n) otherwise. </p>
